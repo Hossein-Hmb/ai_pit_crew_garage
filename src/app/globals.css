@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1f2937; /* slate-800 for softer contrast than pure black */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-title: var(--font-title);
+  --font-body: var(--font-body);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #e5e7eb; /* slate-200 for readable but not pure white */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+h1,
+h2,
+h3,
+.font-title {
+  font-family: var(--font-title), system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  letter-spacing: 0.02em;
+}
