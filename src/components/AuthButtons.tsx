@@ -1,7 +1,7 @@
 "use client";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { Github, LogIn, LogOut, Mail } from "lucide-react";
+import { Github, LogOut, Mail } from "lucide-react";
 import { useState } from "react";
 
 export default function AuthButtons() {

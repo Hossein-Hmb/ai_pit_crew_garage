@@ -1,4 +1,6 @@
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { z } from "zod";
+import { isAllowedOrigin } from "@/lib/security/origin";
 
 export async function GET() {
   try {
@@ -25,6 +27,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!isAllowedOrigin(req)) {
+      return new Response(JSON.stringify({ error: "forbidden" }), {
+        status: 403,
+      });
+    }
     const supabase = await getSupabaseServerClient();
     const {
       data: { user },
@@ -34,12 +41,18 @@ export async function POST(req: Request) {
         status: 401,
       });
 
+    const SettingsSchema = z.object({
+      theme: z.enum(["light", "dark"]).optional(),
+      carNickname: z.string().max(100).optional(),
+      crewPersonality: z.enum(["chaotic", "wise", "goofy"]).optional(),
+    });
     const body = await req.json().catch(() => ({}));
-    const settings = body?.settings ?? null;
-    if (!settings)
+    const parsed = z.object({ settings: SettingsSchema }).safeParse(body);
+    if (!parsed.success)
       return new Response(JSON.stringify({ error: "invalid" }), {
         status: 400,
       });
+    const settings = parsed.data.settings;
 
     const { error } = await supabase
       .from("profiles")

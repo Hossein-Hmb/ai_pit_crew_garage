@@ -1,4 +1,6 @@
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { z } from "zod";
+import { isAllowedOrigin } from "@/lib/security/origin";
 
 export async function GET() {
   try {
@@ -23,6 +25,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!isAllowedOrigin(req)) {
+      return new Response(JSON.stringify({ error: "forbidden" }), {
+        status: 403,
+      });
+    }
     const supabase = await getSupabaseServerClient();
     const {
       data: { user },
@@ -31,12 +38,21 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: "unauthorized" }), {
         status: 401,
       });
-    const body = await req.json();
-    const { kind, input, output, favorite, is_public } = body || {};
-    if (!kind || !output)
+    const schema = z.object({
+      kind: z.enum(["car_name", "pit_strategy", "crew_cheer"]),
+      input: z.any().optional(),
+      output: z.string().min(1).max(4000),
+      favorite: z.boolean().optional(),
+      is_public: z.boolean().optional(),
+    });
+    const body = await req.json().catch(() => ({}));
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
       return new Response(JSON.stringify({ error: "invalid" }), {
         status: 400,
       });
+    }
+    const { kind, input, output, favorite, is_public } = parsed.data;
     const { data, error } = await supabase
       .from("garage_items")
       .insert({
